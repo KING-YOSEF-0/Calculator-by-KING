@@ -644,7 +644,8 @@
         const gameFeedback = document.getElementById('game-feedback');
         const gameInput = document.getElementById('game-input');
 
-        function generateGame() {
+        // Updated: Added a parameter to control if we should focus the input or not
+        function generateGame(shouldFocus = false) {
             const ops = ['+', '-', '*'];
             const op = ops[Math.floor(Math.random() * ops.length)];
             let num1, num2;
@@ -667,7 +668,11 @@
             gameInput.value = '';
             gameFeedback.innerText = '';
             gameFeedback.style.color = 'transparent';
-            gameInput.focus();
+            
+            // Only focus the game input if explicitly requested (e.g., after clicking "Next Question")
+            if (shouldFocus) {
+                gameInput.focus();
+            }
         }
 
         function checkGame() {
@@ -685,8 +690,8 @@
                 gameQuestion.style.transform = "scale(1.1)";
                 setTimeout(() => gameQuestion.style.transform = "scale(1)", 200);
                 
-                // Auto generate next after 2 seconds
-                setTimeout(generateGame, 2000);
+                // Auto generate next after 2 seconds (focus the new input)
+                setTimeout(() => generateGame(true), 2000);
             } else {
                 gameFeedback.innerText = "❌ Oops! Try again.";
                 gameFeedback.style.color = "#ef4444"; // Red
@@ -697,9 +702,6 @@
         gameInput.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') checkGame();
         });
-
-        // Initialize Game on Load
-        window.onload = generateGame;
 
         /* --- 4. BACKGROUND BUBBLE EFFECT --- */
         // Creates floating bubbles on the background for the "cozy" vibe
@@ -727,6 +729,18 @@
             // Remove after animation
             setTimeout(() => bubble.remove(), 8000);
         }, 800); // Spawns a new bubble every 0.8 seconds
+
+        /* --- 5. INITIALIZE PAGE AT TOP --- */
+        window.addEventListener('load', () => {
+            // 1. Load the game but DO NOT focus the game input
+            generateGame(false);
+
+            // 2. Scroll to the very top of the page (Home interface)
+            window.scrollTo(0, 0);
+
+            // 3. Set default interaction to the Calculator's expression box at the top
+            expressionInput.focus();
+        });
     </script>
 </body>
 </html>
