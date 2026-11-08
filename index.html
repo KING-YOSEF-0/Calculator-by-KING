@@ -512,7 +512,7 @@
 
     <!-- Footer -->
     <footer>
-        Designed with 💜 by <span>KING_YOSEF_</span> | &copy; 2024 Bubbly Calculator. All rights reserved.
+        Designed with 💜 by <span>KING_YOSEF_</span> | &copy; 2026 Bubbly Calculator. All rights reserved.
     </footer>
 
     <!-- --- JAVASCRIPT --- -->
@@ -698,6 +698,9 @@
             if (e.key === 'Enter') checkGame();
         });
 
+        // Initialize Game on Load
+        window.onload = generateGame;
+
         /* --- 4. BACKGROUND BUBBLE EFFECT --- */
         // Creates floating bubbles on the background for the "cozy" vibe
         setInterval(() => {
@@ -724,21 +727,6 @@
             // Remove after animation
             setTimeout(() => bubble.remove(), 8000);
         }, 800); // Spawns a new bubble every 0.8 seconds
-
-        /* --- 5. AUTO-SCROLL TO GAMES ON LOAD --- */
-        // Fixed window.onload to include both game generation and auto-scrolling
-        window.addEventListener('load', () => {
-            // 1. Initialize the game
-            generateGame();
-
-            // 2. Wait 1.5 seconds to let the user see the top, then scroll down
-            setTimeout(() => {
-                const gamesSection = document.getElementById('games');
-                if (gamesSection) {
-                    gamesSection.scrollIntoView({ behavior: 'smooth' });
-                }
-            }, 1500); 
-        });
     </script>
 </body>
 </html>
