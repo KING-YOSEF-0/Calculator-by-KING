@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bubbly Calculator - By KING_YOSEF_</title>
+    <style>
+        /* --- CSS VARIABLES & RESET --- */
+        :root {
+            --bg-dark: #0f172a;
+            --bg-panel: rgba(30, 41, 59, 0.7);
+            --primary: #8b5cf6;
+            --primary-hover: #7c3aed;
+            --secondary: #06b6d4;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            cursor: none; /* Custom cursor */
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            /* Bubbly-themed wallpaper background */
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(139, 92, 246, 0.15), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(6, 182, 212, 0.15), transparent 25%),
+                radial-gradient(circle at 50% 80%, rgba(236, 72, 153, 0.1), transparent 25%);
+            background-attachment: fixed;
+        }
+
+        /* --- CUSTOM BUBBLY CURSOR --- */
+        .cursor {
+            width: 15px;
+            height: 15px;
+            background: var(--secondary);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: width 0.2s, height 0.2s, background 0.2s;
+            box-shadow: 0 0 15px var(--secondary);
+        }
+        .cursor-trail {
+            width: 30px;
+            height: 30px;
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9998;
+            transform: translate(-50%, -50%);
+            transition: 0.1s ease-out;
+            opacity: 0.5;
+        }
+
+        /* --- NAVIGATION --- */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 5%;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo span { color: var(--primary); }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+        }
+
+        /* --- MAIN LAYOUT --- */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header-text {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .header-text h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #fff, var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-text p { color: var(--text-muted); }
+
+        /* --- CALCULATOR GRID --- */
+        .calculator-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        /* Glassmorphism Panels */
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 25px;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        input[type="text"]:focus, select:focus {
+            border-color: var(--primary);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .btn-calc {
+            flex: 2;
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            border: none;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            padding: 15px;
+            border-radius: 10px;
+            transition: 0.3s;
+        }
+
+        .btn-clear {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            color: white;
+            font-size: 1.1rem;
+            padding: 15px;
+            border-radius: 10px;
+            transition: 0.3s;
+        }
+
+        .btn-calc:hover, .btn-clear:hover {
+            transform: scale(1.02);
+            filter: brightness(1.2);
+        }
+
+        /* Keypad */
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+        }
+
+        .key {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 15px 0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .key:hover {
+            background: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .key:active {
+            transform: translateY(0);
+        }
+
+        /* Result Panel */
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .result-box {
+            background: rgba(0,0,0,0.4);
+            padding: 30px 20px;
+            border-radius: 10px;
+            font-size: 2rem;
+            font-weight: bold;
+            min-height: 100px;
+            word-wrap: break-word;
+            border: 1px solid var(--glass-border);
+        }
+
+        .sub-panels {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .sub-panel {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid var(--glass-border);
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* --- MATH GAMES SECTION --- */
+        .games-section {
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(6, 182, 212, 0.1));
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            margin-bottom: 60px;
+        }
+
+        .games-section h2 {
+            margin-bottom: 20px;
+            color: var(--secondary);
+        }
+
+        .game-card {
+            background: var(--bg-panel);
+            padding: 30px;
+            border-radius: 15px;
+            display: inline-block;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .game-card h3 { margin-bottom: 10px; }
+        
+        .game-question {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 20px 0;
+            color: var(--primary);
+        }
+
+        .game-input {
+            width: 100px;
+            text-align: center;
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+
+        .game-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-size: 1rem;
+            margin-top: 10px;
+        }
+
+        #game-feedback {
+            margin-top: 15px;
+            font-weight: bold;
+            height: 24px;
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+            border-top: 1px solid var(--glass-border);
+        }
+
+        footer span {
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        /* --- MOBILE RESPONSIVENESS --- */
+        @media (max-width: 900px) {
+            .calculator-wrapper {
+                grid-template-columns: 1fr;
+            }
+            .nav-links {
+                display: none; /* Hide links on small screens */
+            }
+            .keypad {
+                grid-template-columns: repeat(4, 1fr); /* Adjust keypad for mobile */
+            }
+            .cursor, .cursor-trail {
+                display: none; /* Hide custom cursor on touch devices */
+            }
+            * { cursor: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Custom Bubbly Cursor -->
+    <div class="cursor"></div>
+    <div class="cursor-trail"></div>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="logo">
+            🧮 <span>Bubbly</span>Calc
+        </div>
+        <div class="nav-links">
+            <a href="#">Home</a>
+            <a href="#calculator">Calculator</a>
+            <a href="#games">Games</a>
+            <a href="#">About</a>
+        </div>
+        <a href="#calculator" class="btn-primary">Start Calculating</a>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        
+        <div class="header-text">
+            <h1>Standard Scientific Calculator</h1>
+            <p>Fast calculations with safe parsing, readable steps, and copy-ready results.</p>
+        </div>
+
+        <!-- Calculator Area -->
+        <div class="calculator-wrapper" id="calculator">
+            
+            <!-- Input Panel -->
+            <div class="panel">
+                <div class="input-group">
+                    <label>Expression</label>
+                    <input type="text" id="expression" placeholder="Enter an expression (e.g., sin(30) + 5^2)">
+                </div>
+                
+                <div class="input-group" style="margin-top: 15px;">
+                    <label>Angle Unit</label>
+                    <select id="angle-mode">
+                        <option value="deg">Degrees</option>
+                        <option value="rad">Radians</option>
+                    </select>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn-calc" onclick="calculate()">⚡ Calculate</button>
+                    <button class="btn-clear" onclick="clearCalc()">✕ Clear</button>
+                </div>
+
+                <!-- Keypad -->
+                <div class="keypad">
+                    <button class="key" onclick="addText('sin(')">sin</button>
+                    <button class="key" onclick="addText('cos(')">cos</button>
+                    <button class="key" onclick="addText('tan(')">tan</button>
+                    <button class="key" onclick="addText('log(')">log</button>
+                    <button class="key" onclick="addText('ln(')">ln</button>
+                    <button class="key" onclick="addText('√(')">√</button>
+                    
+                    <button class="key" onclick="addText('(')">(</button>
+                    <button class="key" onclick="addText(')')">)</button>
+                    <button class="key" onclick="addText('^')">x^y</button>
+                    <button class="key" onclick="addText('%')">%</button>
+                    <button class="key" onclick="addText('pi')">π</button>
+                    <button class="key" onclick="addText('e')">e</button>
+
+                    <button class="key" onclick="addText('7')">7</button>
+                    <button class="key" onclick="addText('8')">8</button>
+                    <button class="key" onclick="addText('9')">9</button>
+                    <button class="key" onclick="addText('+')">+</button>
+                    <button class="key" onclick="addText('!')">!</button>
+                    <button class="key" onclick="addText('4')">4</button>
+
+                    <button class="key" onclick="addText('5')">5</button>
+                    <button class="key" onclick="addText('6')">6</button>
+                    <button class="key" onclick="addText('*')">×</button>
+                    <button class="key" onclick="addText('-')">−</button>
+                    <button class="key" onclick="addText('1')">1</button>
+                    <button class="key" onclick="addText('2')">2</button>
+
+                    <button class="key" onclick="addText('3')">3</button>
+                    <button class="key" onclick="addText('.')">.</button>
+                    <button class="key" onclick="addText('0')">0</button>
+                    <button class="key" onclick="addText('/')">÷</button>
+                    <button class="key" onclick="backspace()">⌫</button>
+                    <button class="key" onclick="calculate()">=</button>
+                </div>
+            </div>
+
+            <!-- Result Panel -->
+            <div class="panel">
+                <div class="result-header">
+                    <label>Result</label>
+                    <button class="key" style="padding: 5px 15px; width: auto;" onclick="copyResult()">📋 Copy</button>
+                </div>
+                
+                <div class="result-box" id="result">
+                    Waiting for input...
+                </div>
+
+                <div class="sub-panels">
+                    <div class="sub-panel" id="formula-box">
+                        <strong>Formula</strong><br><br>
+                        <span id="formula-text">Parsed expression will appear here.</span>
+                    </div>
+                    <div class="sub-panel" id="steps-box">
+                        <strong>Steps</strong><br><br>
+                        <span id="steps-text">1. Enter expression<br>2. Press Calculate</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Math Games Section (To attract users back) -->
+        <div class="games-section" id="games">
+            <h2>✨ Daily Math Challenge ✨</h2>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Test your mental math skills and keep your brain sharp!</p>
+            
+            <div class="game-card">
+                <h3>Quick Equation</h3>
+                <div class="game-question" id="game-question">Loading...</div>
+                <input type="number" id="game-input" class="game-input" placeholder="?">
+                <button class="game-btn" onclick="checkGame()">Submit</button>
+                <div id="game-feedback"></div>
+                <button class="game-btn" style="background: transparent; border: 1px solid var(--secondary); margin-top: 15px;" onclick="generateGame()">Next Question</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        Designed with 💜 by <span>KING_YOSEF_</span> | &copy; 2024 Bubbly Calculator. All rights reserved.
+    </footer>
+
+    <!-- --- JAVASCRIPT --- -->
+    <script>
+        /* --- 1. CUSTOM BUBBLY CURSOR --- */
+        const cursor = document.querySelector('.cursor');
+        const trail = document.querySelector('.cursor-trail');
+
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+            
+            // Animate the trailing bubble
+            trail.animate({
+                left: e.clientX + 'px',
+                top: e.clientY + 'px'
+            }, { duration: 300, fill: "forwards" });
+        });
+
+        // Make cursor grow on hoverable elements
+        const hoverables = document.querySelectorAll('button, a, input, select');
+        hoverables.forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                cursor.style.width = '25px';
+                cursor.style.height = '25px';
+                cursor.style.background = 'var(--primary)';
+            });
+            el.addEventListener('mouseleave', () => {
+                cursor.style.width = '15px';
+                cursor.style.height = '15px';
+                cursor.style.background = 'var(--secondary)';
+            });
+        });
+
+        /* --- 2. SCIENTIFIC CALCULATOR LOGIC --- */
+        const expressionInput = document.getElementById('expression');
+        const resultBox = document.getElementById('result');
+        const formulaText = document.getElementById('formula-text');
+        const stepsText = document.getElementById('steps-text');
+
+        function addText(text) {
+            expressionInput.value += text;
+        }
+
+        function backspace() {
+            expressionInput.value = expressionInput.value.slice(0, -1);
+        }
+
+        function clearCalc() {
+            expressionInput.value = '';
+            resultBox.innerText = 'Waiting for input...';
+            formulaText.innerText = 'Parsed expression will appear here.';
+            stepsText.innerHTML = '1. Enter expression<br>2. Press Calculate';
+            resultBox.style.color = 'var(--text-main)';
+        }
+
+        function copyResult() {
+            const text = resultBox.innerText;
+            if (text !== 'Waiting for input...' && text !== 'Error') {
+                navigator.clipboard.writeText(text);
+                resultBox.innerText = "Copied!";
+                setTimeout(() => resultBox.innerText = text, 1000);
+            }
+        }
+
+        // Safe Math Evaluation (Replaces standard eval to prevent code injection)
+        function calculate() {
+            let expr = expressionInput.value;
+            if (!expr) return;
+
+            try {
+                // Reformat string for math parsing
+                let formattedExpr = expr
+                    .replace(/pi/g, 'Math.PI')
+                    .replace(/e/g, 'Math.E')
+                    .replace(/√/g, 'Math.sqrt')
+                    .replace(/\^/g, '**')
+                    .replace(/ln\(/g, 'Math.log(')
+                    .replace(/log\(/g, 'Math.log10(');
+                
+                // Handle Factorial (!)
+                const factorial = (n) => n <= 1 ? 1 : n * factorial(n - 1);
+                formattedExpr = formattedExpr.replace(/(\d+)!/g, (match, num) => factorial(parseInt(num)));
+
+                // Handle Trigonometry (Angles)
+                const mode = document.getElementById('angle-mode').value;
+                let trigExpr = formattedExpr;
+                if (mode === 'deg') {
+                    // Wrap trig functions to convert degrees to radians
+                    trigExpr = trigExpr.replace(/Math\.(sin|cos|tan)\((.*?)\)/g, (match, fn, args) => {
+                        return `Math.${fn}((${args}) * Math.PI / 180)`;
+                    });
+                }
+                
+                // Use Function constructor instead of eval for slightly better safety
+                const result = new Function(`return ${trigExpr}`)();
+                
+                // Format Result
+                const finalResult = Number.isInteger(result) ? result : result.toFixed(6);
+                
+                // Update UI
+                resultBox.innerText = finalResult;
+                resultBox.style.color = 'var(--secondary)';
+                
+                // Update Sub-panels
+                formulaText.innerText = formattedExpr;
+                stepsText.innerHTML = `
+                    1. Parsed input: ${expr}<br>
+                    2. Converted to JavaScript: ${formattedExpr}<br>
+                    3. Evaluated result: ${finalResult}
+                `;
+
+            } catch (error) {
+                resultBox.innerText = "Invalid Expression";
+                resultBox.style.color = "#ef4444"; // Red error color
+                formulaText.innerText = "Error parsing expression.";
+                stepsText.innerHTML = "1. Check your parentheses.<br>2. Ensure operators are correct.<br>3. Try again.";
+            }
+        }
+
+        // Allow pressing Enter to calculate
+        expressionInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') calculate();
+        });
+
+        /* --- 3. MATH GAME LOGIC --- */
+        let currentAnswer = 0;
+        const gameQuestion = document.getElementById('game-question');
+        const gameFeedback = document.getElementById('game-feedback');
+        const gameInput = document.getElementById('game-input');
+
+        function generateGame() {
+            const ops = ['+', '-', '*'];
+            const op = ops[Math.floor(Math.random() * ops.length)];
+            let num1, num2;
+
+            if (op === '+') {
+                num1 = Math.floor(Math.random() * 50) + 1;
+                num2 = Math.floor(Math.random() * 50) + 1;
+                currentAnswer = num1 + num2;
+            } else if (op === '-') {
+                num1 = Math.floor(Math.random() * 50) + 10;
+                num2 = Math.floor(Math.random() * num1);
+                currentAnswer = num1 - num2;
+            } else {
+                num1 = Math.floor(Math.random() * 12) + 1;
+                num2 = Math.floor(Math.random() * 12) + 1;
+                currentAnswer = num1 * num2;
+            }
+
+            gameQuestion.innerText = `${num1} ${op} ${num2} = ?`;
+            gameInput.value = '';
+            gameFeedback.innerText = '';
+            gameFeedback.style.color = 'transparent';
+            gameInput.focus();
+        }
+
+        function checkGame() {
+            const userAnswer = parseInt(gameInput.value);
+            if (isNaN(userAnswer)) {
+                gameFeedback.innerText = "Please enter a number!";
+                gameFeedback.style.color = "#fbbf24"; // Yellow
+                return;
+            }
+
+            if (userAnswer === currentAnswer) {
+                gameFeedback.innerText = "🎉 Correct! You're a math wizard!";
+                gameFeedback.style.color = "#10b981"; // Green
+                // Add a small confetti or bounce effect
+                gameQuestion.style.transform = "scale(1.1)";
+                setTimeout(() => gameQuestion.style.transform = "scale(1)", 200);
+                
+                // Auto generate next after 2 seconds
+                setTimeout(generateGame, 2000);
+            } else {
+                gameFeedback.innerText = "❌ Oops! Try again.";
+                gameFeedback.style.color = "#ef4444"; // Red
+            }
+        }
+
+        // Allow pressing Enter in the game input
+        gameInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') checkGame();
+        });
+
+        // Initialize Game on Load
+        window.onload = generateGame;
+
+        /* --- 4. BACKGROUND BUBBLE EFFECT --- */
+        // Creates floating bubbles on the background for the "cozy" vibe
+        setInterval(() => {
+            const bubble = document.createElement('div');
+            bubble.style.position = 'fixed';
+            bubble.style.width = Math.random() * 40 + 10 + 'px';
+            bubble.style.height = bubble.style.width;
+            bubble.style.borderRadius = '50%';
+            bubble.style.background = 'rgba(139, 92, 246, 0.1)';
+            bubble.style.left = Math.random() * 100 + 'vw';
+            bubble.style.bottom = '-50px';
+            bubble.style.zIndex = '-1';
+            bubble.style.pointerEvents = 'none';
+            bubble.style.transition = 'transform 8s linear, opacity 8s ease-in';
+            
+            document.body.appendChild(bubble);
+
+            // Animate upward
+            setTimeout(() => {
+                bubble.style.transform = `translateY(-${window.innerHeight + 100}px)`;
+                bubble.style.opacity = '0';
+            }, 100);
+
+            // Remove after animation
+            setTimeout(() => bubble.remove(), 8000);
+        }, 800); // Spawns a new bubble every 0.8 seconds
+    </script>
+</body>
+</html>
